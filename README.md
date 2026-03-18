@@ -1,0 +1,1 @@
+# 5S-ve-G-rsel-Y-netim-Kontrol-
