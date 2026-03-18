@@ -1,1 +1,1 @@
-# 5S-ve-G-rsel-Y-netim-Kontrol-
+# 5S & Gorsel Yonetim Kontrolu-
