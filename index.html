@@ -470,7 +470,7 @@ function mkData(){
     ToplamSoru:st.sr.length,TamSayisi:o.tam||0,YuksekSayisi:o.yuk||0,KismiSayisi:o.kis||0,UygunsuzSayisi:o.uyg||0,
     AlinanPuan:Math.round((o.tA||0)*100)/100,MaksimumPuan:o.tM||0,SkorYuzde:o.gen||0,GenelNot:'',
     detaylar:st.sr.map(s=>({
-      SoruID:s.soruID,SiraNo:s.siraNo,PlatformID:st.pid,AlanID:s.alanID,Soru:s.soru,
+      SoruID:s.soruID,SiraNo:s.siraNo,PlatformID:st.pid,AlanID:s.alanID,Soru:s.soru.substring(0,100),
       Cevap:st.cv[s.soruID]||'Cevaplanmadı',
       Puan:parseFloat((s.maksPuan*(KAT[st.cv[s.soruID]]||0)).toFixed(2)),
       MaksPuan:s.maksPuan,
@@ -485,12 +485,23 @@ async function spGonder(){
   const data=mkData();
   if(!PA){console.log('Demo:',data);showToast('Demo modu — URL tanımsız');kb.textContent='Kaydedildi ✓';kb.className='btn btn-success';return;}
   try{
-    const r=await fetch(PA,{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify(data)});
-    if(r.ok||r.status===202){kb.textContent='Kaydedildi ✓';kb.className='btn btn-success';showToast('SharePoint kaydedildi!');}
-    else throw new Error('HTTP '+r.status);
+    const jsonStr=JSON.stringify(data);
+    const byteSize=new Blob([jsonStr]).size;
+    console.log('Gonderilen JSON boyutu:',byteSize,'byte, soru sayisi:',data.detaylar.length);
+    const r=await fetch(PA,{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:jsonStr});
+    if(r.ok||r.status===202){
+      kb.textContent='Kaydedildi ✓';kb.className='btn btn-success';
+      showToast('SharePoint kaydedildi!');
+    } else {
+      const errText=await r.text().catch(()=>'');
+      console.error('Flow hatasi HTTP',r.status,errText);
+      kb.textContent='Hata: '+r.status;kb.className='btn btn-danger';kb.disabled=false;
+      showToast('Flow hatası: HTTP '+r.status,1);
+    }
   }catch(e){
+    console.error('Fetch hatasi:',e.message,e);
     kb.textContent='Bağlantı hatası';kb.className='btn btn-danger';kb.disabled=false;
-    showToast('Bağlantı hatası - tekrar deneyin',1);
+    showToast('Hata: '+e.message.substring(0,50),1);
   }
 }
 
