@@ -45,6 +45,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100vh;displa
 .alan-header{border-radius:var(--rs);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
 .alan-header span{font-size:11px;font-weight:700;letter-spacing:.7px;color:#fff;text-transform:uppercase}
 .alan-header .alan-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.7)}
+.alan-header{cursor:pointer;user-select:none}
+.alan-header:hover{filter:brightness(1.08)}
+.alan-header span[id^='ac-']{transition:transform .25s;display:inline-block;font-size:10px}
+.alan-sorular{overflow:visible}
 .alan-A01{background:#0078BE}.alan-A02{background:#1A7A4A}.alan-A03{background:#6D28D9}.alan-A04{background:#D97706}
 .alan-header{cursor:pointer;user-select:none}
 .alan-header:hover{filter:brightness(1.1)}
@@ -114,7 +118,7 @@ input:focus,textarea:focus{border-color:var(--arvato);background:#fff;box-shadow
 <div class="screen active" id="s0">
   <div style="background:var(--arvato);padding:40px 20px 32px;display:flex;flex-direction:column;align-items:center;gap:16px">
     <div style="background:#fff;border-radius:10px;padding:8px 20px"><span style="font-size:22px;font-weight:700;color:var(--arvato)">arvato</span></div>
-    <div style="text-align:center"><div style="font-size:16px;font-weight:600;color:#fff">5S ve Görsel Yönetim Kontrolü</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Stok &amp; Lokasyon</div>/div></div>
+    <div style="text-align:center"><div style="font-size:16px;font-weight:600;color:#fff">5S ve Görsel Yönetim Kontrolü</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Stok &amp; Lokasyon</div></div>
   </div>
   <div class="body" style="justify-content:center">
     <div class="card">
@@ -300,7 +304,18 @@ function renderForm(){
     const srls=st.sr.filter(s=>s.alanID===aid);if(!srls.length)return;
     const ev=srls.filter(s=>st.cv[s.soruID]==='Tam').length;
     const pct=Math.round(ev/srls.length*100);
-    h+='<div class="alan-header alan-'+aid+'"><span>'+AL[aid]+'</span><span class="alan-pct">'+pct+'%</span></div>';
+    h+='<div class="alan-header alan-'+aid+'" data-aid="'+aid+'" onclick="toggleAlan(this.dataset.aid)" style="cursor:pointer" id="ah-'+aid+'">'
+      +'<span>'+AL[aid]+'</span>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<span class="alan-pct">'+pct+'%</span>'
+      +'<span id="ac-'+aid+'" style="font-size:10px;transition:transform .3s;display:inline-block;color:rgba(255,255,255,.8)">&#9660;</span>'
+      +'</div></div>';
+      +'<span>'+AL[aid]+'</span>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<span class="alan-pct">'+pct+'%</span>'
+      +'<span id="ac-'+aid+'" style="font-size:11px;transition:transform .25s ease;display:inline-block;margin-left:4px">&#9660;</span>'
+      +'</div></div>';
+    h+='<div class="alan-sorular" id="as-'+aid+'">';
     srls.forEach(s=>{
       const cv=st.cv[s.soruID]||'';
       const cls=cv==='Tam'?'tam':cv==='Yüksek'?'yuksek':cv==='Kısmi'?'kismi':cv==='Uygunsuz'?'uygunsuz':'';
@@ -310,7 +325,7 @@ function renderForm(){
       if(!cv)h+='<span style="font-size:9px;background:#FEF3C7;color:#B45309;padding:2px 6px;border-radius:4px;font-weight:700">CEVAPLANMADI</span>';
       h+='</div>';
       h+='<div class="soru-text">'+s.soru+'</div>';
-      h+='<div class="bulgu-hint">Bulgu esigi: <span style="font-family:JetBrains Mono,monospace">'+s.b3+'</span> &rarr; 3.sev &nbsp; <span style="font-family:JetBrains Mono,monospace">'+s.b2+'</span> &rarr; 2.sev &nbsp; <span style="font-family:JetBrains Mono,monospace">'+s.b1+'</span> &rarr; 1.sev</div>';
+      h+='<div class="bulgu-hint">Bulgu eşiği: <span style="font-family:JetBrains Mono,monospace">'+s.b3+'</span> &rarr; 3.sev &nbsp; <span style="font-family:JetBrains Mono,monospace">'+s.b2+'</span> &rarr; 2.sev &nbsp; <span style="font-family:JetBrains Mono,monospace">'+s.b1+'</span> &rarr; 1.sev</div>';
       h+='<div class="cevap-row">';
       ['Tam','Yüksek','Kısmi','Uygunsuz'].forEach((c,i)=>{
         const lbl=['✓ Tam','~ Yüksek','◑ Kısmi','✕ Uygunsuz'][i];
@@ -322,10 +337,11 @@ function renderForm(){
       if(fG){
         const eksik=!fV;
         h+='<div class="foto-mini" onclick="openFoto(\''+s.soruID+'\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(fV?'#15803D':'#B91C1C')+'" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="'+(fV?'foto-ok':'')+'">'+(fV?'Fotoğraf eklendi':'Fotoğraf ekle (ZORUNLU)')+'</span></div>';
-        if(eksik)h+='<div style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px;padding-left:2px">Fotograf eksik - ozete gecilemez!</div>';
+        if(eksik)h+='<div style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px;padding-left:2px">Fotoğraf eksik — özete geçilemez!</div>';
       }
       h+='</div>';
     });
+    h+='</div>'; // alan-sorular kapat
   });
   h+='<button class="btn btn-primary" onclick="gOzet()" style="margin-top:4px">Özete Geç →</button><div style="height:20px"></div>';
   document.getElementById('formBody').innerHTML=h;
@@ -458,7 +474,7 @@ function mkData(){
       Cevap:st.cv[s.soruID]||'Cevaplanmadı',
       Puan:parseFloat((s.maksPuan*(KAT[st.cv[s.soruID]]||0)).toFixed(2)),
       MaksPuan:s.maksPuan,
-      FotoVarMi:!!(st.ft[s.soruID]||st.fb[s.soruID]),
+      FotoVarMi:(st.ft[s.soruID]||st.fb[s.soruID])?true:false,
       FotografBase64:st.fb[s.soruID]||'',Aciklama:st.nt[s.soruID]||''
     }))
   };
@@ -498,6 +514,23 @@ function toggleAlan(aid){
     el.classList.remove('kapali');
     el.style.maxHeight='none';
     if(ch)ch.classList.remove('kapali');
+  }
+}
+
+// === ACCORDION ===
+const _alanAcik={};
+function toggleAlan(aid){
+  const el=document.getElementById('as-'+aid);
+  const ch=document.getElementById('ac-'+aid);
+  if(!el)return;
+  _alanAcik[aid]=!_alanAcik[aid];
+  const kapali=_alanAcik[aid];
+  if(kapali){
+    el.style.display='none';
+    if(ch)ch.style.transform='rotate(-90deg)';
+  }else{
+    el.style.display='';
+    if(ch)ch.style.transform='';
   }
 }
 
