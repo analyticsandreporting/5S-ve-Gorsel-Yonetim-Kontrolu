@@ -467,10 +467,10 @@ function mkData(){
     Denetci:st.dc,
     BaslangicSaat:st.basAt?st.basAt.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'',
     BitisSaat:o.bitiAt?o.bitiAt.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'',
-    ToplamSoru:st.sr.length,TamSayisi:o.tam||0,YuksekSayisi:o.yuk||0,KismiSayisi:o.kis||0,UygunsuzSayisi:o.uyg||0,
-    AlinanPuan:Math.round((o.tA||0)*100)/100,MaksimumPuan:o.tM||0,SkorYuzde:o.gen||0,GenelNot:'',
+    ToplamSoru:Math.round(st.sr.length),TamSayisi:Math.round(o.tam||0),YuksekSayisi:Math.round(o.yuk||0),KismiSayisi:Math.round(o.kis||0),UygunsuzSayisi:Math.round(o.uyg||0),
+    AlinanPuan:Math.round((o.tA||0)*100)/100,MaksimumPuan:o.tM||0,SkorYuzde:Math.round(o.gen||0),GenelNot:'',
     detaylar:st.sr.map(s=>({
-      SoruID:s.soruID,SiraNo:s.siraNo,PlatformID:st.pid,AlanID:s.alanID,Soru:s.soru.substring(0,100),
+      SoruID:s.soruID,SiraNo:Math.round(s.siraNo),PlatformID:st.pid,AlanID:s.alanID,Soru:s.soru.substring(0,100),
       Cevap:st.cv[s.soruID]||'Cevaplanmadı',
       Puan:parseFloat((s.maksPuan*(KAT[st.cv[s.soruID]]||0)).toFixed(2)),
       MaksPuan:s.maksPuan,
