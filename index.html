@@ -49,6 +49,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100vh;displa
 .alan-header:hover{filter:brightness(1.08)}
 .alan-header span[id^='ac-']{transition:transform .25s;display:inline-block;font-size:10px}
 .alan-sorular{overflow:visible}
+.platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.platform-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 12px;cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.platform-card:hover,.platform-card:active{border-color:var(--arvato);background:var(--arvato-light);transform:translateY(-1px)}
+.platform-card .pc-id{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#fff;background:var(--arvato);padding:2px 8px;border-radius:99px}
+.platform-card .pc-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3}
 .alan-A01{background:#0078BE}.alan-A02{background:#1A7A4A}.alan-A03{background:#6D28D9}.alan-A04{background:#D97706}
 .alan-header{cursor:pointer;user-select:none}
 .alan-header:hover{filter:brightness(1.1)}
@@ -142,6 +147,15 @@ input:focus,textarea:focus{border-color:var(--arvato);background:#fff;box-shadow
       <input type="password" id="loginSifre" placeholder="Şifrenizi girin" style="margin-bottom:16px" oninput="chkLogin()" onkeydown="if(event.key==='Enter')girisYap()">
       <button class="btn btn-primary" id="loginBtn" onclick="girisYap()" disabled>Giriş Yap</button>
       <div id="loginHata" style="font-size:12px;color:var(--red);text-align:center;margin-top:8px;min-height:18px"></div>
+    </div>
+    <div style="text-align:center;padding:4px 0 2px">
+      <p style="font-size:11px;color:var(--text-hint)">Şifrenizi unuttuysanız yöneticinizle iletişime geçin.</p>
+    </div>
+    <div style="text-align:center;padding:8px 0 4px;border-top:1px solid var(--border-light);margin-top:4px">
+      <p style="font-size:10px;color:var(--text-hint);line-height:1.8">
+        Stok &amp; Lokasyon · Arvato Supply Chain Solutions<br>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--border)">Analytics &amp; Reporting · Enes Çakar · 2026</span>
+      </p>
     </div>
   </div>
 </div>
@@ -277,10 +291,11 @@ async function girisYap(){
 function girisTamamla(){
   setTimeout(taslakKontrol,300);
   const list=document.getElementById('platformList');list.innerHTML='';
+  list.className='platform-grid';
   Object.entries(PL).forEach(([id,ad])=>{
     if(usr.platform==='All'||usr.platform==='ALL'||usr.platform.includes(id)){
-      const b=document.createElement('button');b.className='platform-btn';
-      b.innerHTML='<span>'+ad+'</span><span class="pid">'+id+'</span>';
+      const b=document.createElement('div');b.className='platform-card';
+      b.innerHTML='<span class="pc-id">'+id+'</span><span class="pc-name">'+ad+'</span>';
       b.onclick=()=>platformSec(id);list.appendChild(b);
     }
   });
@@ -329,6 +344,12 @@ function dBaslat(){
 }
 
 function renderForm(){
+  // Hangi alanlar açık - koru
+  const _acikAlanlar={};
+  ['A01','A02','A03','A04'].forEach(aid=>{
+    const el=document.getElementById('as-'+aid);
+    if(el)_acikAlanlar[aid]=(el.style.display!=='none');
+  });
   const t=st.sr.length,d=Object.keys(st.cv).length;
   let h='<div class="progress-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--text-soft)">Tamamlanan</span><span style="font-size:12px;font-weight:600;color:var(--arvato);font-family:JetBrains Mono,monospace" id="pCount">'+d+'/'+t+'</span></div><div class="progress-bar"><div class="progress-fill" id="pFill" style="width:'+(t?Math.round(d/t*100):0)+'%"></div></div></div>';
   ['A01','A02','A03','A04'].forEach(aid=>{
@@ -378,6 +399,16 @@ function renderForm(){
   h+='<button class="btn btn-secondary" onclick="taslakKaydet()" style="margin-top:6px">💾 Taslak Kaydet</button>';
   h+='<div style="height:20px"></div>';
   document.getElementById('formBody').innerHTML=h;
+  // Onceki acik durumlari geri yukle
+  ['A01','A02','A03','A04'].forEach(aid=>{
+    const el=document.getElementById('as-'+aid);
+    const ch=document.getElementById('ac-'+aid);
+    if(!el)return;
+    if(_acikAlanlar[aid]){
+      el.style.display='';
+      if(ch)ch.style.transform='rotate(0deg)';
+    }
+  });
 }
 
 function cvSec(sid,val){
