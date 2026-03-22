@@ -420,12 +420,12 @@ function renderForm(){
         const lbl=['✓ Tam','~ Yüksek','◑ Kısmi','✕ Uygunsuz'][i];
         const pct=['x1.00','x0.75','x0.50','x0.25'][i];
         const sel=['sel-tam','sel-yuksek','sel-kismi','sel-uygunsuz'][i];
-        h+='<button class="cevap-btn'+(cv===c?' '+sel:'')+'" onclick="cvSec(''+s.soruID+'',''+c+'')">'+lbl+'<br><small style="opacity:.7">'+pct+'</small></button>';
+        h+='<button class="cevap-btn'+(cv===c?' '+sel:'')+'" onclick="cvSec(\''+s.soruID+'\',\''+c+'\')">' +lbl+'<br><small style="opacity:.7">'+pct+'</small></button>';
       });
       h+='</div>';
       if(fG){
         const eksik=!fV;
-        h+='<div class="foto-mini" onclick="openFoto(''+s.soruID+'')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(fV?'#15803D':'#B91C1C')+'" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="'+(fV?'foto-ok':'')+'">'+(fV?fV+' eklendi ✓':'Fotoğraf ekle (ZORUNLU)')+'</span></div>';
+        h+='<div class="foto-mini" onclick="openFoto('\''+s.soruID+'\'')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(fV?'#15803D':'#B91C1C')+'" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="'+(fV?'foto-ok':'')+'">'+(fV?fV+' eklendi ✓':'Fotoğraf ekle (ZORUNLU)')+'</span></div>';
         if(eksik)h+='<div style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px;padding-left:2px">Fotoğraf eksik — özete geçilemez!</div>';
       }
       h+='</div>';
@@ -525,7 +525,7 @@ function renderFotoArea(sid){
       +'<span style="font-size:18px">📷</span>'
       +'<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+ad+'</div>'
       +'<div style="font-size:10px;color:var(--text-hint)">'+kb+'KB</div></div>'
-      +'<button onclick="fotSil(''+sid+'','+i+')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-hint)">✕</button>'
+      +'<button onclick="fotSil('\''+sid+'\','+i+')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-hint)">✕</button>'
       +'</div>';
   });
   // Ekle butonu - maks 5'e ulaşmadıysa göster
