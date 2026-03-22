@@ -137,7 +137,7 @@ input:focus,textarea:focus{border-color:var(--arvato);background:#fff;box-shadow
 <div class="screen active" id="s0">
   <div style="background:var(--arvato);padding:40px 20px 32px;display:flex;flex-direction:column;align-items:center;gap:16px">
     <div style="background:#fff;border-radius:10px;padding:8px 20px"><span style="font-size:22px;font-weight:700;color:var(--arvato)">arvato</span></div>
-    <div style="text-align:center"><div style="font-size:16px;font-weight:600;color:#fff">5S ve Görsel Yönetim Kontrolü</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Stock &amp; Location</div></div>
+    <div style="text-align:center"><div style="font-size:16px;font-weight:600;color:#fff">5S ve Görsel Yönetim Kontrolü</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Stok &amp; Lokasyon</div></div>
   </div>
   <div class="body" style="justify-content:center">
     <div class="card">
@@ -408,7 +408,7 @@ function renderForm(){
     srls.forEach(s=>{
       const cv=st.cv[s.soruID]||'';
       const cls=cv==='Tam'?'tam':cv==='Yüksek'?'yuksek':cv==='Kısmi'?'kismi':cv==='Uygunsuz'?'uygunsuz':'';
-      const fG=(cv==='Kısmi'||cv==='Uygunsuz');const fV=st.ft[s.soruID];
+      const fG=(cv==='Kısmi'||cv==='Uygunsuz');const _fb=st.fb[s.soruID];const _fbArr=Array.isArray(_fb)?_fb:(_fb?[_fb]:[]);const fV=_fbArr.length>0?(_fbArr.length+' fotoğraf'):null;
       h+='<div class="soru-card '+cls+'" id="sc-'+s.soruID+'">';
       h+='<div class="soru-meta"><span class="soru-id">'+s.siraNo+'</span><span class="soru-puan">Maks: '+s.maksPuan+' puan</span>';
       if(!cv)h+='<span style="font-size:9px;background:#FEF3C7;color:#B45309;padding:2px 6px;border-radius:4px;font-weight:700">CEVAPLANMADI</span>';
@@ -425,7 +425,7 @@ function renderForm(){
       h+='</div>';
       if(fG){
         const eksik=!fV;
-        h+='<div class="foto-mini" onclick="openFoto(\''+s.soruID+'\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(fV?'#15803D':'#B91C1C')+'" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="'+(fV?'foto-ok':'')+'">'+(fV?'Fotoğraf eklendi':'Fotoğraf ekle (ZORUNLU)')+'</span></div>';
+        h+='<div class="foto-mini" onclick="openFoto(\''+s.soruID+'\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(fV?'#15803D':'#B91C1C')+'" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="'+(fV?'foto-ok':'')+'">'+(fV?fV+' eklendi ✓':'Fotoğraf ekle (ZORUNLU)')+'</span></div>';
         if(eksik)h+='<div style="font-size:10px;color:var(--red);font-weight:700;margin-top:4px;padding-left:2px">Fotoğraf eksik — özete geçilemez!</div>';
       }
       h+='</div>';
@@ -470,43 +470,81 @@ function openFoto(sid){
     b.style.color=sel?'#fff':(b.dataset.val==='Kritik'?'#B91C1C':'var(--text-soft)');
     b.style.borderColor=sel?'#0078BE':(b.dataset.val==='Kritik'?'#B91C1C':'var(--border)');
   });
-  const fV=st.ft[sid];
-  document.getElementById('s3FA').innerHTML=fV
-    ?'<div style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px"><div style="font-size:20px">&#10003;</div><div><div style="font-size:12px;font-weight:600;color:var(--green)">Fotograf eklendi</div><div style="font-size:11px;color:var(--text-soft)">'+fV+'</div></div></div><button class="btn btn-secondary" onclick="document.getElementById(\'fK\').click()" style="margin-top:4px">Fotografı Degistir</button>'
-    :'<div class="foto-upload" onclick="document.getElementById(\'fK\').click()"><div style="width:48px;height:48px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--red-mid)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div style="font-size:13px;font-weight:600;color:var(--red)">Fotograf Cek / Sec</div></div>';
+  renderFotoArea(sid);
   goScreen('s3');
 }
 
+const MAX_FOTO_S=5;
 function fSec(inp){
-  if(inp.files&&inp.files[0]){
-    const f=inp.files[0];st.ft[st.as]=f.name;
-    showToast('Fotoğraf sıkıştırılıyor...');
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        const MAX=800;
-        let w=img.width,h=img.height;
-        if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
-        const canvas=document.createElement('canvas');
-        canvas.width=w;canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        const b64=canvas.toDataURL('image/jpeg',0.70).split(',')[1];
-        st.fb[st.as]=b64;
-        const kb=Math.round(b64.length*0.75/1024);
-        showToast('Fotoğraf eklendi ('+kb+'KB)');
-        setTimeout(()=>openFoto(st.as),300);
-      };
-      img.src=e.target.result;
+  if(!inp.files||!inp.files[0])return;
+  if(!st.fb[st.as])st.fb[st.as]=[];
+  if(!Array.isArray(st.fb[st.as]))st.fb[st.as]=[st.fb[st.as]].filter(Boolean);
+  if(st.fb[st.as].length>=MAX_FOTO_S){showToast('Maksimum 5 fotoğraf eklenebilir',1);return;}
+  const f=inp.files[0];inp.value='';
+  if(!st.ft[st.as])st.ft[st.as]=[];
+  if(!Array.isArray(st.ft[st.as]))st.ft[st.as]=[st.ft[st.as]].filter(Boolean);
+  showToast('Fotoğraf sıkıştırılıyor...');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=800;let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const b64=canvas.toDataURL('image/jpeg',0.70).split(',')[1];
+      st.fb[st.as].push(b64);
+      st.ft[st.as].push(f.name);
+      const kb=Math.round(b64.length*0.75/1024);
+      showToast('Fotoğraf eklendi ('+kb+'KB) '+(st.fb[st.as].length)+'/'+MAX_FOTO_S);
+      renderFotoArea(st.as);
     };
-    reader.readAsDataURL(f);
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(f);
+}
+
+function fotSil(sid,idx){
+  if(Array.isArray(st.fb[sid]))st.fb[sid].splice(idx,1);
+  if(Array.isArray(st.ft[sid]))st.ft[sid].splice(idx,1);
+  renderFotoArea(sid);
+}
+
+function renderFotoArea(sid){
+  const el=document.getElementById('s3FA');
+  if(!el)return;
+  const fotolar=Array.isArray(st.fb[sid])?st.fb[sid]:(st.fb[sid]?[st.fb[sid]]:[]);
+  const isimler=Array.isArray(st.ft[sid])?st.ft[sid]:(st.ft[sid]?[st.ft[sid]]:[]);
+  let h='';
+  // Mevcut fotoğraflar
+  fotolar.forEach((b64,i)=>{
+    const ad=isimler[i]||('Fotoğraf '+(i+1));
+    const kb=Math.round(b64.length*0.75/1024);
+    h+='<div style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--rs);padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:6px">'
+      +'<span style="font-size:18px">📷</span>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+ad+'</div>'
+      +'<div style="font-size:10px;color:var(--text-hint)">'+kb+'KB</div></div>'
+      +'<button onclick="fotSil(''+sid+'','+i+')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-hint)">✕</button>'
+      +'</div>';
+  });
+  // Ekle butonu - maks 5'e ulaşmadıysa göster
+  if(fotolar.length<MAX_FOTO_S){
+    h+='<div class="foto-upload" onclick="document.getElementById('fK').click()">'
+      +'<div style="width:48px;height:48px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--red-mid)">'
+      +'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>'
+      +'</div><div style="font-size:13px;font-weight:600;color:var(--red)">'
+      +(fotolar.length>0?'Fotoğraf Ekle ('+fotolar.length+'/'+MAX_FOTO_S+')':'Fotoğraf Çek / Seç')
+      +'</div></div>';
   }
+  el.innerHTML=h;
 }
 
 function fKaydet(){
   st.nt[st.as]=document.getElementById('s3N').value;
   const cv=st.cv[st.as];
-  if((cv==='Kısmi'||cv==='Uygunsuz')&&!st.fb[st.as]&&!st.ft[st.as]){showToast('Fotoğraf zorunlu!',1);return;}
+  const fbArr=Array.isArray(st.fb[st.as])?st.fb[st.as]:(st.fb[st.as]?[st.fb[st.as]]:[]);
+  if((cv==='Kısmi'||cv==='Uygunsuz')&&fbArr.length===0){showToast('Fotoğraf zorunlu!',1);return;}
   // Departman ve öncelik kaydet
   const dept=document.getElementById('s3Dept').value;
   if(dept)st.gv[st.as]=dept;else delete st.gv[st.as];
@@ -540,7 +578,13 @@ function gOzet(){
     return;
   }
   // 2. Fotograf eksik - ENGEL
-  const fEksik=st.sr.filter(s=>(st.cv[s.soruID]==='Kismi'||st.cv[s.soruID]==='Uygunsuz')&&!st.ft[s.soruID]&&!st.fb[s.soruID]);
+  const fEksik=st.sr.filter(s=>{
+    const cv2=st.cv[s.soruID];
+    if(cv2!=='Kısmi'&&cv2!=='Uygunsuz')return false;
+    const fb=st.fb[s.soruID];
+    if(Array.isArray(fb))return fb.length===0;
+    return !fb;
+  });
   if(fEksik.length>0){
     const ilk=fEksik[0];
     showToast(fEksik.length+' maddede fotoğraf eksik! → '+ilk.soruID,1);
@@ -630,8 +674,10 @@ function mkData(){
       Cevap:st.cv[s.soruID]||'Cevaplanmadı',
       Puan:parseFloat((s.maksPuan*(KAT[st.cv[s.soruID]]||0)).toFixed(2)),
       MaksPuan:s.maksPuan,
-      FotoVarMi:(st.ft[s.soruID]||st.fb[s.soruID])?true:false,
-      FotografBase64:st.fb[s.soruID]||'',Aciklama:st.nt[s.soruID]||'',
+      FotoVarMi:(()=>{const fb=st.fb[s.soruID];return Array.isArray(fb)?fb.length>0:!!fb;})(),
+      FotografBase64:(()=>{const fb=st.fb[s.soruID];return Array.isArray(fb)?(fb[0]||''):fb||'';})(),
+      FotoSayisi:(()=>{const fb=st.fb[s.soruID];return Array.isArray(fb)?fb.length:(fb?1:0);})(),
+      Aciklama:st.nt[s.soruID]||'',
       AtananDepartman:st.gv[s.soruID]||'',
       Oncelik:st.go[s.soruID]||''
     }))
@@ -654,6 +700,8 @@ async function spGonder(){
       kb.textContent='Kaydedildi ✓';kb.className='btn btn-success';
       localStorage.removeItem(DRAFT_KEY);
       showToast('SharePoint kaydedildi!');
+      // Ek fotoğrafları gönder (2. fotoğraftan itibaren)
+      gonderEkFotolar(data);
       // Görev atama yapılan maddeler için ayrıca görev oluştur
       gorevOlustur(data);
     } else {
@@ -666,6 +714,49 @@ async function spGonder(){
     console.error('Fetch hatasi:',e.message,e);
     kb.textContent='Bağlantı hatası';kb.className='btn btn-danger';kb.disabled=false;
     showToast('Hata: '+e.message.substring(0,50),1);
+  }
+}
+
+async function gonderEkFotolar(data){
+  // Her soru için 2. fotoğraftan itibaren ayrı PA çağrısı yap
+  const promises=[];
+  data.detaylar.forEach(d=>{
+    const sid=d.SoruID;
+    const fb=st.fb[sid];
+    if(!Array.isArray(fb)||fb.length<=1)return;
+    // 2. fotoğraftan itibaren
+    for(let i=1;i<fb.length;i++){
+      const payload={
+        DenetimTarihi:data.DenetimTarihi,
+        PlatformID:d.PlatformID,
+        PlatformAdi:data.PlatformAdi,
+        AlanID:d.AlanID,
+        SoruID:sid,
+        FotoIndex:i,
+        FotografBase64:fb[i],
+        FotoVarMi:true,
+        // Boş detaylar - sadece fotoğraf için
+        Denetci:data.Denetci,
+        BaslangicSaat:'',BitisSaat:'',
+        ToplamSoru:0,TamSayisi:0,YuksekSayisi:0,KismiSayisi:0,UygunsuzSayisi:0,
+        AlinanPuan:0,MaksimumPuan:0,SkorYuzde:0,GenelNot:'EK_FOTO',
+        detaylar:[{
+          SoruID:sid,SiraNo:Math.round(d.SiraNo),PlatformID:d.PlatformID,AlanID:d.AlanID,
+          Soru:d.Soru,Cevap:d.Cevap,Puan:d.Puan,MaksPuan:d.MaksPuan,
+          FotoVarMi:true,FotografBase64:fb[i],FotoSayisi:fb.length,
+          Aciklama:'EK_FOTO_'+i,AtananDepartman:'',Oncelik:''
+        }]
+      };
+      promises.push(
+        fetch(PA,{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},
+          body:JSON.stringify(payload).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'')
+        }).catch(e=>console.warn('Ek fotoğraf gönderilemedi:',sid,i,e))
+      );
+    }
+  });
+  if(promises.length>0){
+    await Promise.all(promises);
+    console.log(promises.length+' ek fotoğraf gönderildi');
   }
 }
 
